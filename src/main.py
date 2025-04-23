@@ -28,8 +28,8 @@ def notify_expiring_issues():
         logger.info('No issues has been found')
         return
 
-    # Get the date for tomorrow
-    tomorrow = datetime.now().date() + timedelta(days=1)
+    # Get the date for notify before duedate
+    notify_before_duedate = datetime.now().date() + timedelta(days=config.due_days_before_due_date)
 
     # Loop through issues
     for issue in issues:
@@ -56,7 +56,7 @@ def notify_expiring_issues():
         duedate_obj = datetime.strptime(duedate, "%Y-%m-%d").date()
 
         # Check if the project item is due soon or not
-        if duedate_obj != tomorrow:
+        if duedate_obj != notify_before_duedate:
             continue
 
         # Get the list of assignees
@@ -68,20 +68,20 @@ def notify_expiring_issues():
             comment = utils.prepare_expiring_issue_comment(
                 issue=issue,
                 assignees=assignees,
-                duedate=tomorrow
+                duedate=notify_before_duedate
             )
 
             if not config.dry_run:
                 # Add the comment to the issue
                 graphql.add_issue_comment(issue['id'], comment)
 
-            logger.info(f'Comment added to issue #{issue["number"]} ({issue["id"]}) with due date on {tomorrow}')
+            logger.info(f'Comment added to issue #{issue["number"]} ({issue["id"]}) with due date on {notify_before_duedate}')
         elif config.notification_type == 'email':
             # Prepare the email content
             subject, message, to = utils.prepare_expiring_issue_email_message(
                 issue=issue,
                 assignees=assignees,
-                duedate=tomorrow
+                duedate=notify_before_duedate
             )
 
             if not config.dry_run:
@@ -93,7 +93,7 @@ def notify_expiring_issues():
                     html_body=message
                 )
 
-            logger.info(f'Email sent to {to} for issue #{issue["number"]} with due date on {tomorrow}')
+            logger.info(f'Email sent to {to} for issue #{issue["number"]} with due date on {notify_before_duedate}')
 
 
 def notify_missing_duedate():

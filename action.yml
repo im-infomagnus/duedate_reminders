@@ -22,6 +22,10 @@ inputs:
     description: "The field name"
     required: true
     default: "Due Date"
+  due_days_before_due_date:
+    description: "The number of days before the due date"
+    required: false
+    default: 1
   notification_type:
     description: "The type of notification (comment,aws_email)"
     required: true
